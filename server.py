@@ -73,16 +73,32 @@ def broadcast(msg):
 
 def play_game(conn):
     broadcast("Game of Find a Queen has started!")
-    get_roles()
 
-    # Send messages to dealer and spotter
-    client_lst = list(clients)
+    rounds = 5
+    for round in range(rounds):
+        get_roles()
 
-    dealer_index = roles['dealer'] - 1
-    spotter_index = roles['spotter'] - 1
+        # Send messages to dealer and spotter
+        client_lst = list(clients)
 
-    client_lst[dealer_index].send('You are the dealer'.encode())
-    client_lst[spotter_index].send('You are the spotter'.encode())
+        dealer_index = roles['dealer'] - 1
+        spotter_index = roles['spotter'] - 1
+
+        dealer = client_lst[dealer_index]
+        spotter = client_lst[spotter_index]
+        dealer.send('You are the dealer'.encode())
+        spotter.send('You are the spotter'.encode())
+
+        # Recieve dealer's choice
+        dealer_choice = dealer.recv(1024)
+        spotter_choice = spotter.recv(1024)
+
+        if spotter_choice == dealer_choice:
+            spotter.send(f'You are the winner of round {round}'.encode())
+            dealer.send(f"Oh no you have lost {round}".encode())
+        else:
+            dealer.send(f'You are the winner of round {round}'.encode())
+            spotter.send(f"Oh no you have lost {round}".encode())
 
 
 def get_roles():
@@ -111,6 +127,7 @@ def client_handler(conn, addr):
     if(login_validity[0] == False):
         conn.send('[ERROR] Invalid details entered.'.encode())
         conn.close()
+        return
 
     # Check if the user is already logged in
     if(login_validity[1] in users):
