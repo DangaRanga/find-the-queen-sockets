@@ -95,10 +95,10 @@ def play_game(conn):
 
         if spotter_choice == dealer_choice:
             spotter.send(f'You are the winner of round {round}'.encode())
-            dealer.send(f"Oh no you have lost {round}".encode())
+            dealer.send(f"Oh no you have lost round {round}".encode())
         else:
             dealer.send(f'You are the winner of round {round}'.encode())
-            spotter.send(f"Oh no you have lost {round}".encode())
+            spotter.send(f"Oh no you have lost round {round}".encode())
 
 
 def get_roles():
