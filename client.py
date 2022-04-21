@@ -28,7 +28,7 @@ def play_game(client_socket):
     for round in range(rounds):
         position = client_socket.recv(1024).decode()
 
-        choice = input("Please select the value 1,2 or 3")
+        choice = input("Please select the value 1,2 or 3 -> ")
         valid_choices = ['1', '2', '3']
         if choice not in valid_choices:
             print("Invalid choice")
