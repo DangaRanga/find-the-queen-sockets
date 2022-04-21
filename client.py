@@ -23,30 +23,20 @@ def send_login_details(client_socket):
     client_socket.send(str(login_details).encode())
 
 
-def play_as_dealer(client_socket):
-    choice = input("Please select the value 1,2 or 3 -> ")
-    valid_choices = ['1', '2', '3']
-    if choice not in valid_choices:
-        print("Invalid choice")
-
-    client_socket.send(choice)
-
-
-def play_as_spotter():
-    pass
-
-
 def play_game(client_socket):
-    position = client_socket.recv(1024).decode()
+    rounds = 5
+    for round in range(rounds):
+        position = client_socket.recv(1024).decode()
 
-    choice = input("Please select the value 1,2 or 3")
-    valid_choices = ['1', '2', '3']
-    if choice not in valid_choices:
-        print("Invalid choice")
+        choice = input("Please select the value 1,2 or 3")
+        valid_choices = ['1', '2', '3']
+        if choice not in valid_choices:
+            print("Invalid choice")
 
-    client_socket.send(choice)
+        client_socket.send(choice.encode())
 
-    client_socket.recv(1024)
+        game_status = client_socket.recv(1024).decode()
+        print(game_status)
 
 
 def run_client():
