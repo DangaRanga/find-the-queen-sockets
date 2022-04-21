@@ -3,6 +3,8 @@ import socket
 import datetime as dt
 import threading
 import ast
+import time
+import random
 
 # Initialize global variables
 PORT = 7621
@@ -10,6 +12,12 @@ SERVER_IP = socket.gethostbyname(socket.gethostname())
 ADDR = (SERVER_IP, PORT)
 FORMAT = 'utf-8'
 users = []
+roles = {
+    'dealer': "",
+    'spotter': "",
+}
+clients = set()
+clients_lock = threading.Lock()
 
 
 def parse_data(recieved_data):
@@ -40,7 +48,7 @@ def validate_login(login_details):
 
         {
             "username": "matty7",
-            "password": " win&win99"
+            "password": "win&win99"
         }
     ]
 
@@ -52,8 +60,22 @@ def validate_login(login_details):
     return (False, '')
 
 
+def broadcast(msg):
+    for client in clients:
+        client.send(msg.encode())
+
+
 def play_game(conn):
-    pass
+    broadcast("Game of Find a Queen has started!")
+    get_roles()
+    broadcast(
+        f"Dealer: {roles['dealer']} Spotter: {roles['spotter']}")
+
+
+def get_roles():
+    role_index = random.choice([0, 1])
+    roles['dealer'] = users.pop(role_index)
+    roles['spotter'] = users[0]
 
 
 def client_handler(conn, addr):
@@ -73,15 +95,26 @@ def client_handler(conn, addr):
     login_validity = validate_login(login_eval)
 
     if(login_validity[0] == False):
-        conn.send('Invalid details entered.'.encode())
+        conn.send('[ERROR] Invalid details entered.'.encode())
         conn.close()
 
-    users.append(login_validity[2])
+    # Check if the user is already logged in
+    if(login_validity[1] in users):
+        conn.send('[ERROR] User already logged in.')
+        conn.close()
+        return
 
-    if(len(users) == 2):
-        play_game(conn)
+    users.append(login_validity[1])
 
-    #  while connected:
+    # Determine dealer and spotter
+
+    while connected:
+        if(len(users) == 2):
+            play_game(conn)
+            break
+        else:
+            print("Waiting for users to connect")
+            time.sleep(100)
     # Recieve login details
 
 
@@ -93,9 +126,8 @@ def run_server():
     print(f"[LISTENING] Server is listening on {SERVER_IP}")
 
     while True:
-        if (threading.active_count() - 1 < 2):
-            conn, addr = server.accept()
-
+        conn, addr = server.accept()
+        clients.add(conn)
         thread = threading.Thread(
             target=client_handler, args=(conn, addr))
         thread.start()

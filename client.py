@@ -23,10 +23,15 @@ def send_login_details(client_socket):
 
 
 def run_client():
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
-        client_socket.connect((HOST, PORT))
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    client_socket.connect((HOST, PORT))
 
-        send_login_details(client_socket)
+    send_login_details(client_socket)
+
+    game_start = client_socket.recv(1024).decode()
+    position = client_socket.recv(1024).decode()
+    print(game_start)
+    print(position)
 
 
 if __name__ == '__main__':
