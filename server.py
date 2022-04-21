@@ -1,4 +1,5 @@
 
+from http import client
 import socket
 import datetime as dt
 import threading
@@ -15,6 +16,11 @@ users = []
 roles = {
     'dealer': "",
     'spotter': "",
+}
+
+user_dict = {
+    "1": "",
+    "2": ""
 }
 clients = set()
 clients_lock = threading.Lock()
@@ -68,14 +74,22 @@ def broadcast(msg):
 def play_game(conn):
     broadcast("Game of Find a Queen has started!")
     get_roles()
-    broadcast(
-        f"Dealer: {roles['dealer']} Spotter: {roles['spotter']}")
+
+    # Send messages to dealer and spotter
+    client_lst = list(clients)
+
+    dealer_index = roles['dealer'] - 1
+    spotter_index = roles['spotter'] - 1
+
+    client_lst[dealer_index].send('You are the dealer'.encode())
+    client_lst[spotter_index].send('You are the spotter'.encode())
 
 
 def get_roles():
-    role_index = random.choice([0, 1])
-    roles['dealer'] = users.pop(role_index)
-    roles['spotter'] = users[0]
+    users_nos = [1, 2]
+    role_index = random.choice(users_nos)
+    roles['dealer'] = users_nos.pop(0)
+    roles['spotter'] = users_nos[0]
 
 
 def client_handler(conn, addr):
@@ -104,6 +118,7 @@ def client_handler(conn, addr):
         conn.close()
         return
 
+    user_dict["1"] = login_validity[1]
     users.append(login_validity[1])
 
     # Determine dealer and spotter
@@ -115,7 +130,6 @@ def client_handler(conn, addr):
         else:
             print("Waiting for users to connect")
             time.sleep(100)
-    # Recieve login details
 
 
 def run_server():
